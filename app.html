@@ -1,1 +1,729 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>GITgen Studio</title><meta name="theme-color" content="#325c00"><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="./icon/icon.png"><link rel="icon" href="./icon/icon.png"><script src="https://cdn.tailwindcss.com"></script><style>body{margin:0;min-height:100vh;min-height:100dvh;background:#060a08;}</style></head><body class="min-h-screen flex flex-col text-white" style="background:#060a08;"><div class="flex-1 grid place-items-center p-6 text-center relative"><div class="absolute inset-0" style="background:linear-gradient(0deg,rgba(0,0,0,.78),rgba(0,0,0,.15))"></div><div class="relative w-full max-w-[360px] space-y-6"><div class="w-24 h-24 mx-auto rounded-[24px] grid place-items-center text-4xl overflow-hidden shadow-[0_12px_32px_rgba(0,0,0,.5)]" style="background:linear-gradient(135deg,#325c00,#325c00CC);color:#000"><img src="./icon/icon.png" style="width:100%;height:100%;object-fit:cover"></div><div><h1 class="text-4xl font-black leading-[0.9]">GITgen Studio</h1><p class="text-[11px] tracking-widest font-bold mt-2" style="color:#325c00">CRIE • EDITE • EVOLUA</p><p class="text-white/80 text-[13px] mt-3">Gerenciador Android de arquivos e projetos do Github by Kalli420.</p></div><div class="grid gap-3"><div class="w-full p-4 rounded-[14px] bg-black/40 border border-white/10"><p class="mono text-[10px] text-white/70">App principal carregado via app.html</p><p class="text-[12px] mt-1">Este é o index real do seu PWA.</p></div></div><p id="status" class="mono text-[10px] text-white/70">✅ PWA com icon/ local</p></div></div><script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(()=>{document.getElementById('status').innerText='✅ Offline ativo!';});}</script></body></html>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>GITGEN ANDROID DEVELOPERS - GitHub Mobile Studio V2 PWA FIX</title>
+<meta name="theme-color" content="#00FF88">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+body{font-family:Inter,sans-serif;background:#060A08;color:#E8F5E9;margin:0;height:100vh;height:100dvh;overflow:hidden;overscroll-behavior-y:contain}
+.mono{font-family:'JetBrains Mono',monospace}
+.glass{background:rgba(13,21,17,.88);backdrop-filter:blur(16px);border:1px solid #1A2E24}
+.btn-green{background:linear-gradient(135deg,#00FF88,#00CC6A);color:#001208;font-weight:900}
+#editor{flex:1;background:#050A07;color:#C8F0D8;border:none;padding:16px;font-family:'JetBrains Mono';font-size:13px;resize:none;outline:none;line-height:1.7}
+#mobile-bar{position:fixed;bottom:0;left:0;right:0;height:68px;background:rgba(6,10,8,.98);border-top:1px solid #1A2E24;display:flex;z-index:80}
+.m-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:9px;font-weight:800;color:#415A4E}
+.m-tab.active{color:#00FF88}
+.m-tab i{font-size:18px}
+.mod{display:none;height:calc(100dvh - 56px - 68px);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:80px}
+.mod.active{display:flex;flex-direction:column}
+@media(min-width:900px){
+#mobile-bar{display:none}
+.mod{display:flex !important;height:calc(100vh - 56px);padding-bottom:12px}
+.layout{grid-template-columns:300px 1fr 360px;height:calc(100vh - 56px)}
+}
+.layout{display:grid;flex:1;overflow:hidden;height:calc(100dvh - 56px)}
+#preview-full{position:fixed;inset:0;z-index:200;background:#050A07;display:none;flex-direction:column}
+#preview-full.show{display:flex}
+#fileList{flex:1;min-height:0;padding-bottom:90px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+#repoList{max-height:60vh;overflow-y:auto;padding-bottom:10px}
+#repoListM{max-height:60vh;overflow-y:auto}
+#hypesFactory{max-height:50vh;overflow-y:auto}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#1A2E24;border-radius:10px}
+.toast-root{position:fixed;bottom:76px;right:10px;z-index:300;display:flex;flex-direction:column;gap:8px}
+.t{padding:10px 14px;border-radius:12px;font-family:'JetBrains Mono';font-size:11px;font-weight:700;max-width:340px}
+.size-badge{font-variant-numeric:tabular-nums;font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 6px;border-radius:20px;background:rgba(0,255,136,0.12);border:1px solid rgba(0,255,136,0.25);color:#00FF88;margin-left:6px;white-space:nowrap}
+.size-badge.big{background:rgba(255,170,0,0.15);border-color:rgba(255,170,0,0.3);color:#FFAA00}
+.size-badge.huge{background:rgba(255,80,80,0.15);border-color:rgba(255,80,80,0.3);color:#FF5050}
+.t-ok{background:#00FF88;color:#000}.t-err{background:#1A0D0F;color:#FF9AAE;border:1px solid #3A1A20}
+</style>
+</head>
+<body class="flex flex-col">
+<header class="h-[56px] bg-[#0D1511] border-b border-[#1A2E24] flex items-center justify-between px-3 shrink-0">
+<div class="flex items-center gap-2.5"><div class="w-9 h-9 rounded-[11px] bg-gradient-to-br from-[#00FF88] to-[#00CC6A] grid place-items-center text-black shadow-[0_0_12px_rgba(0,255,136,.4)]"><i class="fas fa-code text-[14px]"></i></div><div class="leading-[0.85]"><div class="font-black text-[16px] tracking-tight">GITGEN <span class="text-[#00FF88]">ANDROID</span></div><div class="mono text-[6.5px] text-[#5A7A6A] font-bold tracking-[0.18em] mt-[2px]">DEVELOPERS • PWA STUDIO V2</div></div></div>
+<div class="flex items-center gap-2"><span id="sdot" class="w-2 h-2 rounded-full bg-zinc-600"></span><span id="srepo" class="text-[10px] mono font-black">OFFLINE</span><button onclick="openPreview()" class="w-8 h-8 rounded-xl glass grid place-items-center text-[#00FF88]"><i class="fas fa-eye text-xs"></i></button></div>
+</header>
+
+<div class="layout">
+<div id="m-conexao" class="mod active bg-[#080E0B] border-r border-[#1A2E24] p-3 gap-3">
+<div class="glass rounded-[18px] p-3 space-y-3">
+<p class="text-[10px] font-black tracking-widest text-[#6B8A7A]">CONECTAR GITHUB</p>
+<p class="text-[11px] text-[#A8C5B8] leading-4">Conecte seu GitHub para criar e editar projetos direto do celular.</p>
+<div class="relative"><input id="token" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxx" class="w-full h-12 px-3 pr-10 rounded-[12px] bg-[#050A07] border border-[#1A2E24] mono text-[12px] outline-none focus:border-[#00FF88]" onkeyup="if(event.key==='Enter') autoConnect()"><button onclick="toggleTok()" class="absolute right-2 top-3 w-6 h-6 grid place-items-center text-[#6B8A7A]"><i class="fas fa-eye text-xs"></i></button></div>
+<button onclick="autoConnect()" id="btnC" class="w-full h-12 rounded-[12px] btn-green text-[12px]"><i class="fas fa-magic mr-2"></i>CONECTAR AUTOMÁTICO</button>
+<div class="flex gap-2 text-[11px] mono items-center"><span id="cdot" class="w-2 h-2 rounded-full bg-zinc-700"></span><span id="ctxt" class="text-zinc-500">Aguardando token</span></div>
+<details class="mt-1"><summary class="text-[10px] mono text-[#6B8A7A] cursor-pointer">Avançado (owner/repo manual)</summary><div class="grid grid-cols-2 gap-2 mt-2"><input id="owner" placeholder="owner" class="h-9 px-2 rounded-[10px] bg-[#050A07] border border-[#1A2E24] mono text-[11px]"><input id="rname" placeholder="repo" class="h-9 px-2 rounded-[10px] bg-[#050A07] border border-[#1A2E24] mono text-[11px]"></div></details>
+<select id="branch" onchange="changeBranch()" class="w-full h-9 mt-2 rounded-[10px] bg-[#050A07] border border-[#1A2E24] mono text-[11px]"><option>main</option></select>
+<div id="userBox" class="pt-2"></div>
+</div>
+<div class="glass rounded-[18px] p-3 flex-1 overflow-auto">
+<div class="flex justify-between items-center mb-2"><p class="text-[10px] font-black text-[#6B8A7A]">MEUS REPOSITÓRIOS • segure para deletar</p><button onclick="autoConnect()" class="w-6 h-6 rounded-lg bg-white/5 grid place-items-center"><i class="fas fa-sync text-[10px]"></i></button></div>
+<input id="repoQ" oninput="filterRepo()" placeholder="Filtrar..." class="w-full h-8 px-3 mb-2 rounded-[10px] bg-[#050A07] border border-[#1A2E24] mono text-[11px]">
+<div id="repoList" class="space-y-1.5"></div>
+</div>
+</div>
+
+<div id="m-repos" class="mod bg-[#080E0B] border-r border-[#1A2E24] p-3 gap-3 overflow-auto">
+<div class="glass rounded-[18px] p-3"><p class="font-black text-[13px]"><i class="fas fa-flask text-[#00FF88] mr-2"></i>STUDIO V2</p><p class="mono text-[10px] text-[#6B8A7A] mt-1 leading-[1.4]">Focado em PWA/TWA/Site. Agora com upload real de ícone e fundo.</p></div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+<button onclick="openFactory('pwa')" class="glass rounded-[18px] p-3 text-left hover:border-[#00FF88]/40"><div class="flex gap-2 items-center"><div class="w-9 h-9 rounded-[12px] bg-[#00FF88]/15 border border-[#00FF88]/20 grid place-items-center text-[#00FF88] font-black">%<i class="fas fa-mobile-alt hidden text-[13px]"></i></div><div><div class="font-black text-[12px]">PWA Completa</div><div class="mono text-[9px] text-[#6B8A7A]">com studio upload real</div></div></div></button>
+<button onclick="openFactory('twa')" class="glass rounded-[18px] p-3 text-left"><div class="flex gap-2 items-center"><div class="w-9 h-9 rounded-[12px] bg-[#00CC6A]/15 border border-[#00CC6A]/20 grid place-items-center text-[#00CC6A]"><i class="fab fa-google-play text-[13px]"></i></div><div><div class="font-black text-[12px]">PWA + TWA</div><div class="mono text-[9px] text-[#6B8A7A]">pronta APK/AAB + icon/</div></div></div></button>
+<button onclick="openFactory('site')" class="glass rounded-[18px] p-3 text-left"><div class="flex gap-2 items-center"><div class="w-9 h-9 rounded-[12px] bg-blue-500/10 border border-blue-500/20 grid place-items-center text-blue-400"><i class="fas fa-rocket text-[13px]"></i></div><div><div class="font-black text-[12px]">Site Hype</div><div class="mono text-[9px] text-[#6B8A7A]">landing premium</div></div></div></button>
+</div>
+<div class="glass rounded-[18px] p-3"><p class="text-[10px] font-black text-[#6B8A7A] mb-2">MEUS HYPES ATIVOS</p><div id="hypesFactory" class="grid gap-2"></div></div>
+<div class="glass rounded-[18px] p-3"><p class="text-[10px] font-black text-[#6B8A7A] mb-2">BIBLIOTECA</p><div id="repoListM" class="space-y-1.5"></div></div>
+</div>
+
+<div id="m-arquivos" class="mod bg-[#080E0B] border-r border-[#1A2E24]">
+<div class="p-3 border-b border-[#1A2E24] flex justify-between"><div><p class="text-[10px] font-black text-[#6B8A7A]">ARQUIVOS - clique na imagem pra ver CDN</p><p id="bread" class="mono text-[11px] text-[#00FF88]">root</p></div><div class="flex gap-1"><button onclick="addFolder()" class="w-8 h-8 rounded-[10px] glass grid place-items-center"><i class="fas fa-folder-plus text-xs"></i></button><button onclick="newFile()" class="w-8 h-8 rounded-[10px] glass grid place-items-center"><i class="fas fa-file-circle-plus text-xs"></i></button><button onclick="upload()" class="w-8 h-8 rounded-[10px] glass grid place-items-center"><i class="fas fa-upload text-xs"></i></button></div></div>
+<input id="fileQ" oninput="filterFile()" placeholder="Buscar arquivos..." class="m-3 h-9 px-3 rounded-[10px] bg-[#050A07] border border-[#1A2E24] mono text-[11px]">
+<div id="fileList" class="flex-1 overflow-auto p-2 space-y-1"></div>
+</div>
+
+<div id="m-editor" class="mod bg-[#050A07]">
+<div class="h-10 border-b border-[#1A2E24] bg-[#0D1511] flex items-center justify-between px-2"><span id="ftitle" class="mono text-[10px] text-[#6B8A7A] truncate">Nenhum arquivo</span><div class="flex gap-1"><button onclick="openPreview()" class="px-2 h-7 rounded-lg bg-white/5 text-[10px] font-bold"><i class="fas fa-expand mr-1"></i>Preview</button><button onclick="saveFile()" class="px-3 h-7 rounded-lg btn-green text-[10px]">SALVAR</button></div></div>
+<div class="flex flex-1 overflow-hidden"><div id="ln" class="w-10 bg-[#080E0B] text-[#415A4E] mono text-[11px] p-2 text-right">1</div><textarea id="editor" placeholder="// Selecione repo → arquivo..."></textarea></div>
+<div class="h-6 border-t border-[#1A2E24] bg-[#0D1511] flex justify-between px-2 text-[9px] mono text-[#6B8A7A]"><span id="estats">0 linhas</span><span id="sha">-</span></div>
+</div>
+
+<div id="m-painel" class="mod bg-[#080E0B] border-l border-[#1A2E24] p-3 gap-3 overflow-auto">
+<div class="glass rounded-[18px] p-3"><p class="text-[10px] font-black text-[#00FF88]">DASHBOARD</p><div class="grid grid-cols-2 gap-2 mt-2"><div class="bg-[#050A07] rounded-[12px] p-2 border border-[#1A2E24]"><p class="text-[8px] text-[#6B8A7A]">REPOS</p><p id="d-repos" class="text-[18px] font-black text-[#00FF88]">0</p></div><div class="bg-[#050A07] rounded-[12px] p-2 border border-[#1A2E24]"><p class="text-[8px] text-[#6B8A7A]">STARS</p><p id="d-stars" class="text-[18px] font-black text-white">0</p></div><div class="bg-[#050A07] rounded-[12px] p-2 border border-[#1A2E24]"><p class="text-[8px] text-[#6B8A7A]">VISITAS</p><p id="d-visits" class="text-[18px] font-black text-[#00CC6A]">0</p></div><div class="bg-[#050A07] rounded-[12px] p-2 border border-[#1A2E24]"><p class="text-[8px] text-[#6B8A7A]">BRANCH</p><p id="d-branch" class="text-[12px] font-black mono text-white">main</p></div></div></div>
+<div class="glass rounded-[18px] p-3"><p class="text-[10px] font-black text-[#6B8A7A] mb-2"><i class="fas fa-satellite-dish text-[#00FF88] mr-1"></i>VISITAS REAIS</p><div id="logs" class="space-y-2 max-h-[28vh] overflow-auto pr-1"><p class="mono text-[11px] text-zinc-500">Sem logs</p></div><button onclick="loadLogs()" class="w-full mt-2 h-8 rounded-[10px] bg-white/5 mono text-[10px]">Atualizar visitas</button></div>
+<div class="glass rounded-[18px] p-3"><div class="flex justify-between items-center mb-2"><p class="text-[10px] font-black text-[#6B8A7A]"><i class="fas fa-code-branch text-[#00FF88] mr-1"></i>HISTÓRICO • BACKUP</p><input id="histFilter" placeholder="Filtrar..." class="h-6 px-2 rounded-[8px] bg-[#050A07] border border-[#1A2E24] mono text-[8px] w-[90px]"></div><div id="commits" class="space-y-2 max-h-[55vh] overflow-auto pr-1"><p class="mono text-[11px] text-zinc-500">Carregando...</p></div><button onclick="loadCommits()" class="w-full mt-2 h-7 rounded-[10px] bg-white/5 mono text-[9px] text-[#6B8A7A]">Atualizar histórico</button></div>
+</div>
+</div>
+
+<div id="mobile-bar"><button onclick="switchM('conexao')" id="t-conexao" class="m-tab active"><i class="fas fa-plug"></i>CONEXÃO</button><button onclick="switchM('repos')" id="t-repos" class="m-tab"><i class="fas fa-code"></i>STUDIO</button><button onclick="switchM('arquivos')" id="t-arquivos" class="m-tab"><i class="fas fa-folder"></i>ARQUIVOS</button><button onclick="switchM('editor')" id="t-editor" class="m-tab"><i class="fas fa-code"></i>EDITOR</button><button onclick="switchM('painel')" id="t-painel" class="m-tab"><i class="fas fa-chart-pie"></i>DASH</button></div>
+
+<div id="preview-full"><div class="h-[56px] bg-[#0D1511] border-b border-[#1A2E24] flex items-center justify-between px-4"><div class="flex items-center gap-3"><span class="w-8 h-8 rounded-xl bg-[#00FF88] text-black grid place-items-center"><i class="fas fa-eye"></i></span><span id="pv-title" class="mono text-[12px] font-black">Preview</span></div><button onclick="closePreview()" class="w-11 h-11 rounded-xl bg-[#1A0D0F] border border-[#3A1A20] text-[#FF9AAE] grid place-items-center"><i class="fas fa-times text-[18px]"></i></button></div><iframe id="pv-iframe" class="flex-1 w-full border-none bg-white"></iframe></div>
+
+<div id="toasts" class="toast-root"></div>
+
+<!-- FACTORY SIMPLE MODAL -->
+<div id="factoryModal" class="fixed inset-0 z-[150] bg-black/70 backdrop-blur-sm hidden place-items-center p-4">
+<div class="w-full max-w-[400px] glass rounded-[20px] p-4 space-y-3">
+<h3 id="fTitle" class="font-black text-[14px]">Criar Hype</h3>
+<p id="fDesc" class="mono text-[10px] text-[#6B8A7A]"></p>
+<input id="fName" placeholder="nome-do-hype" class="w-full h-11 px-3 rounded-[12px] bg-[#050A07] border border-[#1A2E24] mono text-[12px] outline-none focus:border-[#00FF88]">
+<div class="flex gap-2"><button onclick="closeFactory()" class="flex-1 h-10 rounded-[12px] bg-white/5 mono text-[11px] font-bold">Cancelar</button><button id="fBtn" onclick="createHype()" class="flex-1 h-10 rounded-[12px] btn-green mono text-[11px]">CRIAR HYPE</button></div>
+</div>
+</div>
+
+<!-- PWA STUDIO MODAL V2 - COM UPLOAD REAL -->
+<div id="pwaStudio" class="fixed inset-0 z-[200] bg-black/90 backdrop-blur-md hidden">
+<div class="w-full h-full md:p-4 grid place-items-center">
+<div class="w-full max-w-[1100px] h-[100dvh] md:h-[88vh] bg-[#0D1511] border border-[#1A2E24] md:rounded-[20px] overflow-hidden flex flex-col md:flex-row shadow-[0_0_80px_rgba(0,0,0,.8)]">
+  <div class="w-full md:w-[440px] h-[58%] md:h-full bg-[#080E0B] border-b md:border-b-0 md:border-r border-[#1A2E24] flex flex-col shrink-0">
+    <div class="h-[56px] border-b border-[#1A2E24] flex items-center justify-between px-4 shrink-0">
+      <div class="flex items-center gap-2"><div class="w-8 h-8 rounded-[10px] bg-[#00FF88] text-black grid place-items-center"><i class="fas fa-code text-[12px]"></i></div><div><div class="font-black text-[12px]">PWA STUDIO V2</div><div class="mono text-[8px] text-[#00FF88]">URL + UPLOAD • preview real • pasta icon/</div></div></div>
+      <button onclick="closeStudio()" class="w-8 h-8 rounded-[10px] bg-[#1A0D0F] border border-[#3A1A20] text-[#FF9AAE] grid place-items-center"><i class="fas fa-times text-[11px]"></i></button>
+    </div>
+    <div class="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-4" style="-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y">
+      <div class="space-y-1"><label class="mono text-[9px] font-black text-[#6B8A7A]">NOME DO PROJETO</label><input id="sName" placeholder="meu-app" class="w-full h-10 px-3 rounded-[10px] bg-[#050A07] border border-[#1A2E24] mono text-[12px] outline-none focus:border-[#00FF88]"></div>
+      <div class="grid grid-cols-2 gap-2"><div class="space-y-1"><label class="mono text-[9px] font-black text-[#6B8A7A]">TÍTULO</label><input id="sTitle" placeholder="MEU APP" class="w-full h-9 px-2 rounded-[10px] bg-[#050A07] border border-[#1A2E24] mono text-[11px]"></div><div class="space-y-1"><label class="mono text-[9px] font-black text-[#6B8A7A]">SUBTÍTULO</label><input id="sSub" placeholder="PWA • OFFLINE" class="w-full h-9 px-2 rounded-[10px] bg-[#050A07] border border-[#1A2E24] mono text-[11px]"></div></div>
+      <div class="space-y-1"><label class="mono text-[9px] font-black text-[#6B8A7A]">DESCRIÇÃO</label><textarea id="sDesc" rows="2" placeholder="Descrição curta do app" class="w-full px-3 py-2 rounded-[10px] bg-[#050A07] border border-[#1A2E24] mono text-[11px] resize-none outline-none focus:border-[#00FF88]"></textarea></div>
+
+      <div class="glass rounded-[14px] p-3 space-y-2 border border-[#00FF88]/30 bg-[#00FF88]/[0.03]">
+        <div class="flex justify-between items-center"><label class="mono text-[9px] font-black text-[#00FF88]">ÍCONE APP — splash, ícone home, tela instalar</label><span id="sIconStatus" class="mono text-[7px] px-2 py-0.5 rounded-full bg-[#00FF88]/20 text-[#00FF88]">URL ou UPLOAD</span></div>
+        <div class="flex gap-2 items-center">
+          <div id="sIconPreviewBox" class="w-14 h-14 rounded-[14px] bg-[#050A07] border border-[#1A2E24] grid place-items-center overflow-hidden shrink-0 text-[22px] shadow-inner">%</div>
+          <input id="sIconUrl" placeholder="https://cdn.../icon.png ou emoji % " class="flex-1 h-12 px-3 rounded-[12px] bg-[#050A07] border border-[#1A2E24] mono text-[11px] outline-none focus:border-[#00FF88]">
+        </div>
+        <div class="flex gap-2">
+          <button onclick="document.getElementById('sIconFile').click()" class="flex-1 h-10 rounded-[10px] bg-[#00FF88] text-black mono text-[11px] font-black"><i class="fas fa-camera mr-1"></i>UPLOAD FOTO CELULAR</button>
+          <button onclick="clearIcon()" class="px-4 h-10 rounded-[10px] bg-white/5 border border-[#1A2E24] mono text-[10px] text-[#6B8A7A]">Limpar</button>
+        </div>
+        <input type="file" id="sIconFile" accept="image/*,.webp,.png,.jpg,.jpeg" class="hidden">
+        <p class="mono text-[7px] text-[#5A7A6A] leading-[1.3]">Se upar, cria <b class="text-[#00FF88]">icon/icon.png</b> e <b class="text-[#00FF88]">icon/splash.png</b> + manifest apontando pra pasta local. Se usar URL CDN, usa direto.</p>
+        <input id="sIcon" class="hidden" value="%">
+      </div>
+
+      <div class="grid grid-cols-2 gap-2"><div class="space-y-1"><label class="mono text-[9px] font-black text-[#6B8A7A]">COR TEMA</label><div class="flex gap-2"><input id="sColor" type="color" value="#00FF88" class="w-10 h-10 rounded-[10px] bg-transparent border border-[#1A2E24] p-1"><input id="sColorText" value="#00FF88" class="flex-1 h-10 px-2 rounded-[10px] bg-[#050A07] border border-[#1A2E24] mono text-[11px]"></div></div><div class="space-y-1"><label class="mono text-[9px] font-black text-[#6B8A7A]">COR FUNDO</label><input id="sBgColor" type="color" value="#060A08" class="w-full h-10 rounded-[10px] bg-transparent border border-[#1A2E24] p-1"></div></div>
+
+      <div class="glass rounded-[14px] p-3 space-y-2">
+        <div class="flex justify-between items-center"><label class="mono text-[9px] font-black text-[#6B8A7A]">IMAGEM DE FUNDO — tela splash</label><span id="sBgStatus" class="mono text-[7px] px-2 py-0.5 rounded-full bg-white/10 text-[#6B8A7A]">URL ou UPLOAD</span></div>
+        <div class="flex gap-2"><input id="sBg" placeholder="https://.../bg.jpg (CDN) ou deixe vazio" class="flex-1 h-10 px-3 rounded-[10px] bg-[#050A07] border border-[#1A2E24] mono text-[10px]"><div id="sBgPreviewBox" class="w-10 h-10 rounded-[8px] bg-cover bg-center border border-[#1A2E24] shrink-0 bg-[#050A07]"></div></div>
+        <div class="grid grid-cols-4 gap-1.5"><button onclick="setPreset('#060A08')" class="h-8 rounded-[8px] bg-[#060A08] border border-[#1A2E24]"></button><button onclick="setPreset('#0a0a0a')" class="h-8 rounded-[8px] bg-[#0a0a0a] border border-[#1A2E24]"></button><button onclick="setPreset('https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600')" class="h-8 rounded-[8px] bg-cover border border-[#1A2E24]" style="background-image:url(https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=100)"></button><button onclick="setPreset('https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600')" class="h-8 rounded-[8px] bg-cover border border-[#1A2E24]" style="background-image:url(https://images.unsplash.com/photo-1511512578047-dfb367046420?w=100)"></button></div>
+        <div class="flex gap-2"><button onclick="document.getElementById('sBgFile').click()" class="flex-1 h-8 rounded-[8px] bg-white/5 border border-[#1A2E24] mono text-[10px]"><i class="fas fa-upload mr-1"></i>Upload foto fundo</button><input type="file" id="sBgFile" accept="image/*" class="hidden"><button onclick="setPreset('')" class="px-3 h-8 rounded-[8px] bg-[#1A0D0F] border border-[#3A1A20] text-[#FF9AAE] mono text-[10px]">Limpar</button></div>
+        <p class="mono text-[7px] text-[#5A7A6A]">Se upar, salva <b class="text-white">icon/bg.png</b> e o preview usa real.</p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2"><div class="space-y-1"><label class="mono text-[9px] font-black text-[#6B8A7A]">BOTÃO</label><input id="sBtn" class="w-full h-9 px-2 rounded-[10px] bg-[#050A07] border border-[#1A2E24] mono text-[11px]"></div><div class="space-y-1"><label class="mono text-[9px] font-black text-[#6B8A7A]">ESTILO</label><select id="sStyle" class="w-full h-9 px-2 rounded-[10px] bg-[#050A07] border border-[#1A2E24] mono text-[11px]"><option value="center">Centro</option><option value="bottom">Bottom</option><option value="minimal">Minimal</option></select></div></div>
+      <div class="pt-2 pb-2 space-y-2">
+        <button onclick="createFromStudio()" id="sCreateBtn" class="w-full h-12 rounded-[12px] btn-green text-[13px]"><i class="fas fa-rocket mr-2"></i>CRIAR PWA COM PASTA ICON/</button>
+        <div class="flex gap-2"><button onclick="closeStudio()" class="flex-1 h-9 rounded-[10px] bg-white/5 border border-[#1A2E24] mono text-[10px] font-bold">Cancelar</button><button onclick="updateStudio()" class="flex-1 h-9 rounded-[10px] bg-[#00FF88]/10 border border-[#00FF88]/20 text-[#00FF88] mono text-[10px] font-bold">Atualizar Preview</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="flex-1 h-[42%] md:h-full bg-[#050A07] flex flex-col overflow-hidden">
+    <div class="h-10 border-b border-[#1A2E24] flex items-center justify-between px-3 shrink-0"><p class="mono text-[9px] font-black text-[#00FF88]">LIVE PREVIEW • SPLASH REAL • ICON REAL</p><div class="flex gap-1"><button onclick="setMode('mobile')" class="w-7 h-7 rounded-[8px] bg-white/5 grid place-items-center text-[11px]"><i class="fas fa-mobile-alt"></i></button><button onclick="setMode('desktop')" class="w-7 h-7 rounded-[8px] bg-white/5 grid place-items-center text-[11px]"><i class="fas fa-desktop"></i></button></div></div>
+    <div class="flex-1 overflow-auto grid place-items-center p-4 bg-[#060A08]">
+      <div id="sPreview" class="w-full max-w-[340px] min-h-[520px] md:min-h-[560px] rounded-[24px] overflow-hidden border-[8px] border-[#1A2E24] bg-[#060A08] relative flex flex-col shrink-0 shadow-[0_0_40px_rgba(0,0,0,.5)]"></div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- IMAGE MODAL -->
+<div id="imageModal" class="fixed inset-0 z-[250] bg-black/80 backdrop-blur-md hidden place-items-center p-4">
+<div class="w-full max-w-[440px] glass rounded-[20px] overflow-hidden max-h-[90vh] flex flex-col">
+<div class="h-[56px] bg-[#0D1511] border-b border-[#1A2E24] flex justify-between items-center px-4 shrink-0"><span id="imgTitle" class="mono text-[11px] font-black truncate"></span><button onclick="closeImg()" class="w-9 h-9 rounded-xl bg-[#1A0D0F] border border-[#3A1A20] text-[#FF9AAE] grid place-items-center"><i class="fas fa-times"></i></button></div>
+<div class="p-3 overflow-auto space-y-3">
+<div class="rounded-[14px] overflow-hidden bg-[#050A07] border border-[#1A2E24] grid place-items-center min-h-[180px] p-2"><img id="imgPrev" src="" style="max-width:100%;max-height:320px;object-fit:contain;border-radius:10px"></div>
+<div class="space-y-2">
+<div class="bg-[#050A07] rounded-[12px] p-2.5 border border-[#1A2E24]"><p class="mono text-[8px] text-[#6B8A7A]">RAW GITHUB</p><div class="flex gap-2 mt-1"><input id="imgRaw" readonly class="flex-1 h-8 px-2 rounded-[8px] bg-[#080E0B] border border-[#1A2E24] mono text-[9px]"><button onclick="copyVal('imgRaw')" class="px-3 h-8 rounded-[8px] bg-white/5 text-[10px]">Copiar</button></div></div>
+<div class="bg-[#050A07] rounded-[12px] p-2.5 border border-[#1A2E24]"><p class="mono text-[8px] text-[#6B8A7A]">JSDelivr CDN</p><div class="flex gap-2 mt-1"><input id="imgJs" readonly class="flex-1 h-8 px-2 rounded-[8px] bg-[#080E0B] border border-[#1A2E24] mono text-[9px]"><button onclick="copyVal('imgJs')" class="px-3 h-8 rounded-[8px] bg-[#00FF88] text-black text-[10px] font-black">Copiar</button></div></div>
+<div class="bg-[#050A07] rounded-[12px] p-2.5 border border-[#1A2E24]"><p class="mono text-[8px] text-[#6B8A7A]">HTML</p><div class="flex gap-2 mt-1"><input id="imgHtml" readonly class="flex-1 h-8 px-2 rounded-[8px] bg-[#080E0B] border border-[#1A2E24] mono text-[9px]"><button onclick="copyVal('imgHtml')" class="px-3 h-8 rounded-[8px] bg-white/5 text-[10px]">Copiar</button></div></div>
+<div class="flex gap-2"><button onclick="insertImg()" class="flex-1 h-10 rounded-[12px] btn-green text-[11px]"><i class="fas fa-plus mr-1"></i> Inserir no editor</button><button onclick="delImg()" class="px-4 h-10 rounded-[12px] bg-[#1A0D0F] border border-[#3A1A20] text-[#FF9AAE] text-[11px]">Deletar</button></div>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+// CORE STATE - preserved
+
+// === GITGEN V8 - COMPRESSOR GLOBAL + VISUAL TAMANHOS ===
+async function compressImageToSize_SAFE(file, targetSize, mime='image/png', quality=0.85){
+  return new Promise((res,rej)=>{
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement('canvas');
+      canvas.width=targetSize; canvas.height=targetSize;
+      const ctx=canvas.getContext('2d');
+      const scale=Math.max(targetSize/img.width, targetSize/img.height);
+      const w=img.width*scale, h=img.height*scale;
+      const x=(targetSize-w)/2, y=(targetSize-h)/2;
+      ctx.imageSmoothingQuality='high';
+      ctx.drawImage(img,x,y,w,h);
+      canvas.toBlob((blob)=>{
+        if(!blob){ rej('blob fail'); return; }
+        const reader=new FileReader();
+        reader.onload=()=>{ res({blob, dataUrl:reader.result, bytes:blob.size, w:targetSize, h:targetSize}); };
+        reader.readAsDataURL(blob);
+      }, mime, quality);
+    };
+    img.onerror=rej;
+    img.src=URL.createObjectURL(file);
+  });
+}
+async function compressImageMax_SAFE(file, maxDim=1280, mime='image/jpeg', quality=0.82){
+  return new Promise((res,rej)=>{
+    const img=new Image();
+    img.onload=()=>{
+      let w=img.width, h=img.height;
+      if(w>maxDim || h>maxDim){
+        const r=Math.min(maxDim/w, maxDim/h);
+        w*=r; h*=r;
+      }
+      const canvas=document.createElement('canvas');
+      canvas.width=w; canvas.height=h;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,w,h);
+      canvas.toBlob((blob)=>{
+        const reader=new FileReader();
+        reader.onload=()=>{ res({blob, dataUrl:reader.result, bytes:blob.size, w:Math.round(w), h:Math.round(h), origW:img.width, origH:img.height}); };
+        reader.readAsDataURL(blob);
+      }, mime, quality);
+    };
+    img.onerror=rej;
+    img.src=URL.createObjectURL(file);
+  });
+}
+
+function showCompressorToast(origBytes, newBytes, name){
+  const saving = Math.round((1-newBytes/origBytes)*100);
+  const el=document.createElement('div');
+  el.className='fixed bottom-[84px] left-3 right-3 z-[95] glass rounded-[14px] p-3 border border-[#00FF88]/40 flex justify-between items-center';
+  el.innerHTML=`<div class="mono text-[10px]"><div class="font-black text-[#00FF88]"><i class="fas fa-compress mr-1"></i>${name}</div><div class="text-white/60 mt-1">${fmtBytes(origBytes)} → <b class="text-[#00FF88]">${fmtBytes(newBytes)}</b> <span class="text-[#00FF88]">-${saving}%</span></div></div><i class="fas fa-check text-[#00FF88]"></i>`;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),3500);
+}
+
+// Hook para uploads de arquivos gerais (aba ARQUIVOS)
+(function(){
+  const originalFetch = window.fetch;
+  // Intercepta o input de upload da aba arquivos - procura por input file dinamico
+  document.addEventListener('change', async (e)=>{
+    const input=e.target;
+    if(input.type!=='file') return;
+    if(input.id==='sIconFile' || input.id==='sBgFile') return; // tratados separado
+    const file=input.files && input.files[0];
+    if(!file || !file.type.startsWith('image/')) return;
+    if(file.size < 120*1024) return; // já pequeno
+    e.stopImmediatePropagation();
+    const orig=file.size;
+    const comp=await compressImageMax(file, 1280, file.type.includes('png')?'image/png':'image/jpeg', 0.82);
+    if(comp.bytes < orig){
+      const newFile=new File([comp.blob], file.name, {type: comp.blob.type});
+      const dt=new DataTransfer();
+      dt.items.add(newFile);
+      input.files=dt.files;
+      showCompressorToast(orig, comp.bytes, file.name);
+      // Se for upload via API (GitHub), o codigo que usa input.files já vai pegar o comprimido
+    }
+  }, true);
+})();
+
+let TOKEN=localStorage.getItem('hypelab_token')||''; let REPO=localStorage.getItem('hypelab_repo')||''; let BRANCH=localStorage.getItem('hypelab_branch')||'main';
+let currentPath=''; let folderItems=[]; let allRepos=[]; let activePath=''; let currentSha='';
+let studioBgData=''; let studioIconData=''; let studioIconExt='png'; let studioBgExt='png';
+const $=id=>document.getElementById(id);
+function toast(m,type){ const r=$('toasts'); const d=document.createElement('div'); d.className='t '+(type==='err'?'t-err':'t-ok'); d.innerText=m; r.appendChild(d); setTimeout(()=>d.remove(),2600); }
+function rawUrl(p){ const parts=REPO.split('/'); return `https://raw.githubusercontent.com/${REPO}/${BRANCH}/${p}`; }
+function jsUrl(p){ const parts=REPO.split('/'); return `https://cdn.jsdelivr.net/gh/${REPO}@${BRANCH}/${p}`; }
+function isImg(n){ return /\.(png|jpg|jpeg|gif|webp|svg|ico)$/i.test(n); }
+function escapeHtml(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function sanitize(n){ return n.replace(/[^a-z0-9.\-_]/gi,'-').toLowerCase(); }
+
+function switchM(id){ document.querySelectorAll('.mod').forEach(m=>m.classList.remove('active')); $('m-'+id).classList.add('active'); document.querySelectorAll('.m-tab').forEach(t=>t.classList.remove('active')); const tab=$('t-'+id); if(tab) tab.classList.add('active'); }
+function toggleTok(){ const i=$('token'); i.type=i.type==='password'?'text':'password'; }
+function openPreview(){ const ed=$('editor').value; if(!ed){toast('Sem conteudo','err');return;} $('pv-iframe').srcdoc=ed; $('preview-full').classList.add('show'); }
+function closePreview(){ $('preview-full').classList.remove('show'); }
+function filterRepo(){ const q=$('repoQ').value.toLowerCase(); const f=q? allRepos.filter(r=>r.name.toLowerCase().includes(q)):allRepos; renderRepos(f); }
+function fmtBytes(b){ if(b==null) return ''; if(b<1024) return b+' B'; if(b<1024*1024) return (b/1024).toFixed(b<10240?1:0)+' KB'; return (b/1024/1024).toFixed(2)+' MB'; }
+function sizeClass(b){ if(b>1024*1024) return 'size-badge huge'; if(b>300*1024) return 'size-badge big'; return 'size-badge'; }
+function filterFile(){ const q=$('fileQ').value.toLowerCase(); const list=q? folderItems.filter(i=>i.name.toLowerCase().includes(q)): folderItems; let html=''; if(currentPath){ const parent=currentPath.split('/').slice(0,-1).join('/'); html+=`<button onclick="loadFolder('${parent}')" class="w-full text-left glass rounded-[12px] p-2.5 flex gap-2 text-[12px]"><i class="fas fa-arrow-left"></i> Voltar</button>`; } html+=list.map(it=>{ const dir=it.type==='dir'; const img=isImg(it.name); let ic=''; if(dir) ic='<i class="fas fa-folder text-[#00CC6A]"></i>'; else if(img) ic=`<div class="w-8 h-8 rounded-[8px] bg-[#050A07] border border-[#1A2E24] overflow-hidden"><img src="${rawUrl(it.path)}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none'"></div>`; else if(it.name.endsWith('.html')) ic='<i class="fas fa-file-code text-orange-400"></i>'; else ic='<i class="fas fa-file text-zinc-500"></i>'; const click=img?`openImgModal('${it.path}')`:(dir?`loadFolder('${it.path}')`:`openFile('${it.path}')`); const sz = it.size!=null? `<span class="${sizeClass(it.size)}">${fmtBytes(it.size)}</span>` : ''; return `<div class="glass rounded-[12px] p-2.5 flex justify-between items-center"><button onclick="${click}" class="flex gap-2.5 items-center flex-1 text-left min-w-0"><span class="shrink-0">${ic}</span><span class="mono text-[11px] truncate">${escapeHtml(it.name)}</span>${img?'<span class="text-[7px] px-1 py-0.5 rounded-full bg-[#00FF88]/10 text-[#00FF88] border border-[#00FF88]/20">IMG</span>':''}${sz}</button><button onclick="fileAction('${it.path}')" class="w-7 h-7 rounded-[8px] bg-white/5 grid place-items-center text-zinc-400"><i class="fas fa-ellipsis-h text-[9px]"></i></button></div>`; }).join(''); $('fileList').innerHTML=html||'<p class="p-4 mono text-[11px] text-zinc-500">Vazio</p>'; }
+
+async function autoConnect(){
+ const t=$('token').value.trim()||TOKEN; if(!t){toast('Cole token','err');return;} TOKEN=t; localStorage.setItem('hypelab_token',t); $('btnC').innerText='CONECTANDO...';
+ try{ const res=await fetch('https://api.github.com/user',{headers:{Authorization:'token '+TOKEN}}); if(!res.ok) throw new Error('Token invalido'); const user=await res.json(); $('userBox').innerHTML=`<div class="flex gap-2 items-center"><img src="${user.avatar_url}" class="w-7 h-7 rounded-full"><span class="mono text-[11px] font-black">${user.login}</span><span class="text-[10px] text-[#00FF88]">@${user.login}</span></div>`; $('cdot').className='w-2 h-2 rounded-full bg-[#00FF88]'; $('ctxt').innerText='@'+user.login+' conectado'; $('ctxt').className='text-[#00FF88]'; $('sdot').className='w-2 h-2 rounded-full bg-[#00FF88]'; $('srepo').innerText=user.login;
+ const repoRes=await fetch('https://api.github.com/user/repos?per_page=100&sort=updated',{headers:{Authorization:'token '+TOKEN}}); const repos=await repoRes.json(); allRepos=repos; renderRepos(repos); $('d-repos').innerText=repos.length; let stars=0; repos.forEach(r=>stars+=r.stargazers_count); $('d-stars').innerText=stars; toast('Conectado!','ok'); if(REPO) loadBranches();
+ }catch(e){ toast(e.message,'err'); $('cdot').className='w-2 h-2 rounded-full bg-red-500'; $('ctxt').innerText=e.message; } finally{ $('btnC').innerHTML='<i class="fas fa-magic mr-2"></i>CONECTAR AUTOMÁTICO'; }
+}
+function renderRepos(list){
+ const html=list.map(r=>`<div class="glass rounded-[12px] p-2.5 flex justify-between items-center" oncontextmenu="event.preventDefault();delRepo('${r.full_name}')" onclick="selectRepo('${r.full_name}')"><div class="flex gap-2 items-center min-w-0"><div class="w-7 h-7 rounded-[8px] bg-white/5 grid place-items-center"><i class="fab fa-github text-[11px]"></i></div><div class="min-w-0"><div class="mono text-[11px] font-bold truncate">${escapeHtml(r.name)}</div><div class="mono text-[8px] text-[#6B8A7A]">${r.visibility||'public'} • ★${r.stargazers_count}</div></div></div><span class="mono text-[8px] px-2 py-1 rounded-full bg-[#00FF88]/10 text-[#00FF88]">${r.full_name===REPO?'ATIVO':'abrir'}</span></div>`).join('');
+ $('repoList').innerHTML=html; $('repoListM').innerHTML=html; $('hypesFactory').innerHTML=list.slice(0,8).map(r=>`<div class="bg-[#050A07] border border-[#1A2E24] rounded-[12px] p-2.5 flex justify-between items-center"><div class="min-w-0"><div class="font-black text-[11px] truncate">${escapeHtml(r.name)}</div><div class="mono text-[8px] text-[#6B8A7A]">${new Date(r.updated_at).toLocaleDateString()}</div></div><button onclick="selectRepo('${r.full_name}')" class="px-3 h-7 rounded-[10px] bg-[#00FF88]/10 border border-[#00FF88]/20 text-[#00FF88] text-[10px] font-bold">Abrir</button></div>`).join('')||'<p class="mono text-[10px] text-zinc-500">Nenhum</p>';
+}
+function selectRepo(full){ REPO=full; localStorage.setItem('hypelab_repo',full); $('srepo').innerText=full.split('/')[1]; $('sdot').className='w-2 h-2 rounded-full bg-[#00FF88]'; toast('Repo '+full+' selecionado','ok'); loadBranches(); }
+async function delRepo(full){ if(!confirm('Deletar repo '+full+' do GitHub?')) return; const res=await fetch('https://api.github.com/repos/'+full,{method:'DELETE',headers:{Authorization:'token '+TOKEN}}); if(res.ok||res.status===204){ toast('Deletado','ok'); allRepos=allRepos.filter(r=>r.full_name!==full); renderRepos(allRepos); } else toast('Erro: precisa admin rights','err'); }
+async function loadBranches(){ try{ const res=await fetch(`https://api.github.com/repos/${REPO}/branches`,{headers:{Authorization:'token '+TOKEN}}); if(!res.ok) return; const data=await res.json(); $('branch').innerHTML=data.map(b=>`<option ${b.name===BRANCH?'selected':''}>${b.name}</option>`).join(''); if(!data.find(b=>b.name===BRANCH)) BRANCH=data[0]?.name||'main'; $('d-branch').innerText=BRANCH; loadFolder(''); loadCommits(); loadLogs(); }catch{} }
+function changeBranch(){ BRANCH=$('branch').value; localStorage.setItem('hypelab_branch',BRANCH); $('d-branch').innerText=BRANCH; loadFolder(currentPath); }
+async function loadFolder(path){ currentPath=path||''; $('bread').innerText=path||'root'; try{ const res=await fetch(`https://api.github.com/repos/${REPO}/contents/${path}?ref=${BRANCH}`,{headers:{Authorization:'token '+TOKEN}}); if(!res.ok){ $('fileList').innerHTML='<p class="p-4 mono text-[11px] text-red-400">Erro '+res.status+'</p>'; return;} const data=await res.json(); folderItems=Array.isArray(data)? data : []; filterFile(); }catch(e){ $('fileList').innerHTML='<p class="p-4 mono text-[11px] text-red-400">'+e.message+'</p>'; } }
+function updateLines(){ const ed=$('editor'); const lines=ed.value.split('\n').length; $('ln').innerText=Array.from({length:lines},(_,i)=>i+1).join('\n'); $('estats').innerText=lines+' linhas'; }
+$('editor').addEventListener('input',updateLines); $('editor').addEventListener('scroll',()=>{$('ln').scrollTop=$('editor').scrollTop;});
+
+async function openFile(path){ try{ $('ftitle').innerText='Carregando '+path; const res=await fetch(`https://api.github.com/repos/${REPO}/contents/${path}?ref=${BRANCH}`,{headers:{Authorization:'token '+TOKEN}}); const data=await res.json(); const decoded=decodeURIComponent(escape(atob(data.content.replace(/\n/g,'')))); $('editor').value=decoded; activePath=path; currentSha=data.sha; $('ftitle').innerText=path; $('sha').innerText='sha '+data.sha.slice(0,7); updateLines(); if(innerWidth<900) switchM('editor'); toast('Aberto','ok'); }catch(e){ toast(e.message,'err'); } }
+async function saveFile(){ if(!activePath){toast('Sem arquivo','err');return;} const msg=prompt('Commit:','update '+activePath); if(msg===null) return; try{ const content=btoa(unescape(encodeURIComponent($('editor').value))); const res=await fetch(`https://api.github.com/repos/${REPO}/contents/${activePath}`,{method:'PUT',headers:{Authorization:'token '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify({message:msg,content,sha:currentSha,branch:BRANCH})}); if(!res.ok) throw new Error((await res.text()).slice(0,100)); const d=await res.json(); currentSha=d.content.sha; toast('Salvo!','ok'); loadCommits(); }catch(e){ toast(e.message,'err'); } }
+function addFolder(){ const n=prompt('Nome pasta:'); if(!n) return; if(n.includes('..')||n.includes('/')||n.includes('\\')){ toast('Nome inválido','err'); return; } const clean=sanitize(n); const p=(currentPath?currentPath+'/':'')+clean+'/.gitkeep'; fetch(`https://api.github.com/repos/${REPO}/contents/${p}`,{method:'PUT',headers:{Authorization:'token '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify({message:'add folder '+clean,content:btoa(''),branch:BRANCH})}).then(r=>{ if(r.ok){toast('Pasta criada','ok'); loadFolder(currentPath);} }); }
+function newFile(){ const n=prompt('Nome arquivo (ex: index.html):'); if(!n) return; if(n.includes('..')){ toast('Nome inválido','err'); return; } let initial=''; if(n.endsWith('.html')) initial='<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+n+'</title></head><body><h1>'+n+'</h1></body></html>'; else if(n.endsWith('.css')) initial='/* '+n+' */\nbody{background:#060A08;color:#E8F5E9}'; else if(n.endsWith('.js')) initial='// '+n+'\nconsole.log("loaded");'; const p=(currentPath?currentPath+'/':'')+n; fetch(`https://api.github.com/repos/${REPO}/contents/${p}`,{method:'PUT',headers:{Authorization:'token '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify({message:'create '+n,content:btoa(unescape(encodeURIComponent(initial))),branch:BRANCH})}).then(r=>{ if(r.ok){toast('Criado','ok'); loadFolder(currentPath); openFile(p);} }); }
+function upload(){ const inp=document.createElement('input'); inp.type='file'; inp.accept='image/*,.gif,.webp,.png,.jpg,.jpeg'; inp.onchange=e=>{ const file=e.target.files[0]; if(!file) return; if(file.size>12*1024*1024){ toast('>12MB bloqueado','err'); return; } const suggested=sanitize(file.name); const finalName=prompt('Nome da imagem (pode renomear):', suggested); if(finalName===null) return; if(finalName.includes('..')||finalName.includes('/')||finalName.includes('\\')){ toast('Nome inválido - sem / ou ..','err'); return; } const reader=new FileReader(); reader.onload=async()=>{ const b64=reader.result.split(',')[1]; const p=(currentPath?currentPath+'/':'')+(finalName.trim()||suggested); toast(`Upando ${file.name} ${fmtBytes(file.size)}...`,'ok'); const res=await fetch(`https://api.github.com/repos/${REPO}/contents/${p}`,{method:'PUT',headers:{Authorization:'token '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify({message:'upload '+finalName+' '+fmtBytes(file.size),content:b64,branch:BRANCH})}); if(res.ok){toast(`✅ ${finalName} ${fmtBytes(file.size)} salvo!`,'ok'); loadFolder(currentPath);} else { const txt=await res.text(); toast('Erro upload: '+txt.slice(0,80),'err'); } }; reader.readAsDataURL(file); }; inp.click(); }
+async function fileAction(path){ const img=isImg(path); const a=prompt('Ação:\n1=deletar\n2=renomear\n3=copiar path'+(img?'\n4=ver CDN/imagem':'')); if(!a) return; if(a==='1'){ if(!confirm('Deletar '+path+'?')) return; const item=folderItems.find(i=>i.path===path); const res=await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`,{method:'DELETE',headers:{Authorization:'token '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify({message:'delete '+path,sha:item.sha,branch:BRANCH})}); if(res.ok){toast('Deletado','ok'); loadFolder(currentPath);} } else if(a==='2'){ const newName=prompt('Novo nome:', path.split('/').pop()); if(!newName) return; const newPath=(path.includes('/')? path.split('/').slice(0,-1).join('/')+'/' : '')+newName; const getRes=await fetch(`https://api.github.com/repos/${REPO}/contents/${path}?ref=${BRANCH}`,{headers:{Authorization:'token '+TOKEN}}); const data=await getRes.json(); const createRes=await fetch(`https://api.github.com/repos/${REPO}/contents/${newPath}`,{method:'PUT',headers:{Authorization:'token '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify({message:'rename to '+newName,content:data.content,branch:BRANCH})}); if(createRes.ok){ await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`,{method:'DELETE',headers:{Authorization:'token '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify({message:'cleanup',sha:data.sha,branch:BRANCH})}); toast('Renomeado','ok'); loadFolder(currentPath);} } else if(a==='3'){ navigator.clipboard.writeText(path); toast('Copiado','ok'); } else if(a==='4' && img){ openImgModal(path); } }
+function openImgModal(path){ const modal=$('imageModal'); $('imgTitle').innerText=path; $('imgPrev').src=rawUrl(path); $('imgRaw').value=rawUrl(path); $('imgJs').value=jsUrl(path); $('imgHtml').value='<img src="'+jsUrl(path)+'" alt="'+path.split('/').pop()+'">'; modal._path=path; modal.classList.remove('hidden'); modal.classList.add('grid'); }
+function closeImg(){ const m=$('imageModal'); m.classList.add('hidden'); m.classList.remove('grid'); }
+function copyVal(id){ navigator.clipboard.writeText($(id).value); toast('Copiado!','ok'); }
+function insertImg(){ const m=$('imageModal'); const p=m._path; const tag='<img src="'+jsUrl(p)+'" alt="'+p.split('/').pop()+'" style="max-width:100%">'; const ed=$('editor'); const s=ed.selectionStart; ed.value=ed.value.slice(0,s)+tag+ed.value.slice(ed.selectionEnd); toast('Inserido','ok'); }
+function delImg(){ const m=$('imageModal'); const path=m._path; if(!confirm('Deletar '+path+'?')) return; const item=folderItems.find(i=>i.path===path); fetch(`https://api.github.com/repos/${REPO}/contents/${path}`,{method:'DELETE',headers:{Authorization:'token '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify({message:'delete img',sha:item.sha,branch:BRANCH})}).then(r=>{ if(r.ok){toast('Deletada','ok'); closeImg(); loadFolder(currentPath);} }); }
+async function loadLogs(){ try{ const res=await fetch(`https://api.github.com/repos/${REPO}/contents/.matrix/logs.json?ref=${BRANCH}`,{headers:{Authorization:'token '+TOKEN}}); if(!res.ok){$('logs').innerHTML='<p class="mono text-[11px] text-zinc-500">Sem logs</p>'; return;} const data=await res.json(); const logs=JSON.parse(decodeURIComponent(escape(atob(data.content)))); $('d-visits').innerText=logs.length; $('logs').innerHTML=logs.slice(0,20).map(l=>`<div class="bg-[#050A07] p-2 rounded-[10px] border border-[#1A2E24]"><div class="flex justify-between mono text-[11px]"><span class="text-[#00FF88] font-bold">${l.ip||'?'}</span><span class="text-zinc-500 text-[10px]">${l.data||''}</span></div></div>`).join(''); }catch{} }
+// HISTÓRICO V14 - MESMO LAYOUT APROVADO + CORES + BACKUP
+let allCommitsCache=[];
+function getCommitType(msg){
+  const l=msg.toLowerCase();
+  if(l.includes('upload')) return {type:'upload', color:'#00FF88', bg:'rgba(0,255,136,.12)', border:'rgba(0,255,136,.25)', dot:'#00FF88'};
+  if(l.includes('delete')) return {type:'delete', color:'#FF5050', bg:'rgba(255,80,80,.12)', border:'rgba(255,80,80,.25)', dot:'#FF5050'};
+  if(l.includes('rename')) return {type:'rename', color:'#FBBF24', bg:'rgba(251,191,36,.12)', border:'rgba(251,191,36,.25)', dot:'#FBBF24'};
+  if(l.includes('create')||l.includes('feat')) return {type:'create', color:'#A78BFA', bg:'rgba(167,139,250,.12)', border:'rgba(167,139,250,.25)', dot:'#A78BFA'};
+  return {type:'update', color:'#60A5FA', bg:'rgba(96,165,250,.12)', border:'rgba(96,165,250,.25)', dot:'#60A5FA'};
+}
+function copyText(t){ navigator.clipboard.writeText(t); toast('Copiado: '+t.slice(0,30),'ok'); }
+async function restoreFilePrompt(sha, msg){
+  const filePath=prompt(`RESTAURAR BACKUP\nCommit: ${sha.slice(0,7)} - ${msg}\n\nQual arquivo voltar? (ex: icon/icon.png, app.html, index.html)\nDeixe vazio pra cancelar:`);
+  if(!filePath) return;
+  if(filePath.includes('..')){ toast('Path inválido','err'); return; }
+  if(!confirm(`Restaurar ${filePath} para versão de ${sha.slice(0,7)}?\nIsso cria um novo commit.`)) return;
+  try{
+    toast('Buscando versão antiga...','ok');
+    const r=await fetch(`https://api.github.com/repos/${REPO}/contents/${filePath}?ref=${sha}`,{headers:{Authorization:'token '+TOKEN}});
+    if(!r.ok) throw new Error('Arquivo não existia nesse commit');
+    const d=await r.json();
+    const content=d.content;
+    // pega sha atual se existir
+    let curSha=null;
+    const r2=await fetch(`https://api.github.com/repos/${REPO}/contents/${filePath}?ref=${BRANCH}`,{headers:{Authorization:'token '+TOKEN}});
+    if(r2.ok){ const cd=await r2.json(); curSha=cd.sha; }
+    const put=await fetch(`https://api.github.com/repos/${REPO}/contents/${filePath}`,{method:'PUT',headers:{Authorization:'token '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify({message:`restore ${filePath} to ${sha.slice(0,7)} - ${msg}`,content,sha:curSha,branch:BRANCH})});
+    if(!put.ok) throw new Error((await put.text()).slice(0,100));
+    toast(`✅ ${filePath} restaurado!`,'ok');
+    loadFolder(currentPath);
+    loadCommits();
+  }catch(e){ toast('Erro: '+e.message.slice(0,80),'err'); }
+}
+function toggleCommit(id){
+  const el=document.getElementById('commit-extra-'+id);
+  if(el) el.classList.toggle('hidden');
+}
+async function loadCommits(){
+  try{
+    const res=await fetch(`https://api.github.com/repos/${REPO}/commits?per_page=30&sha=${BRANCH}`,{headers:{Authorization:'token '+TOKEN}});
+    if(!res.ok) return;
+    const data=await res.json();
+    allCommitsCache=data;
+    const filter=document.getElementById('histFilter')?.value.toLowerCase()||'';
+    const filtered=filter? data.filter(c=>c.commit.message.toLowerCase().includes(filter)): data;
+    $('commits').innerHTML=filtered.map((c,i)=>{
+      const rawMsg=c.commit.message.split('\n')[0];
+      const safeMsg=escapeHtml(rawMsg);
+      const badge=getCommitType(rawMsg);
+      const date=new Date(c.commit.author.date).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+      const sha=c.sha.slice(0,7);
+      const fullSha=c.sha;
+      return `<div class="bg-[#050A07] p-2.5 rounded-[14px] border border-[#1A2E24] hover:border-[#00FF88]/20 transition cursor-pointer" onclick="toggleCommit('${i}')">
+        <div class="flex gap-2.5 items-start">
+          <div class="relative shrink-0"><img src="${c.author?.avatar_url||''}" class="w-8 h-8 rounded-full bg-white/10"><span class="absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-[#050A07]" style="background:${badge.dot}"></span></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex gap-1.5 items-center flex-wrap"><span class="mono text-[7px] font-black px-1.5 py-0.5 rounded-full border" style="background:${badge.bg};border-color:${badge.border};color:${badge.color}">${badge.type.toUpperCase()}</span><span class="mono text-[11px] font-bold truncate text-white">${safeMsg}</span></div>
+            <div class="mono text-[9px] text-[#6B8A7A] mt-1 flex gap-1.5 flex-wrap items-center"><span>${escapeHtml(c.commit.author.name)}</span><span>•</span><span>${date}</span><span>•</span><button onclick="event.stopPropagation(); copyText('${fullSha}')" class="text-[#00FF88] hover:underline">${sha}</button></div>
+          </div>
+          <a href="${c.html_url}" target="_blank" onclick="event.stopPropagation()" class="w-7 h-7 rounded-[8px] bg-white/5 grid place-items-center text-[#00FF88] shrink-0"><i class="fas fa-external-link-alt text-[9px]"></i></a>
+        </div>
+        <div id="commit-extra-${i}" class="hidden mt-2.5 pt-2.5 border-t border-[#1A2E24] space-y-2">
+          <div class="grid grid-cols-3 gap-1.5">
+            <button onclick="event.stopPropagation(); copyText('${fullSha}')" class="h-7 rounded-[8px] bg-white/5 border border-[#1A2E24] mono text-[8px] text-white/70"><i class="fas fa-copy mr-1"></i>Copiar SHA</button>
+            <button onclick="event.stopPropagation(); copyText('${safeMsg}')" class="h-7 rounded-[8px] bg-white/5 border border-[#1A2E24] mono text-[8px] text-white/70"><i class="fas fa-copy mr-1"></i>Copiar msg</button>
+            <button onclick="event.stopPropagation(); window.open('${c.html_url}','_blank')" class="h-7 rounded-[8px] bg-white/5 border border-[#1A2E24] mono text-[8px] text-white/70"><i class="fas fa-code mr-1"></i>Ver diff</button>
+          </div>
+          <button onclick="event.stopPropagation(); restoreFilePrompt('${fullSha}','${safeMsg}')" class="w-full h-8 rounded-[10px] bg-[#00FF88]/10 border border-[#00FF88]/20 text-[#00FF88] mono text-[9px] font-black"><i class="fas fa-clock-rotate-left mr-1"></i>RESTAURAR ARQUIVO DESTE COMMIT (BACKUP)</button>
+          <p class="mono text-[7px] text-[#5A7A6A] leading-[1.2]">Restaura qualquer arquivo para como estava neste commit. Ex: icon/icon.png volta pra versão de ${sha}</p>
+        </div>
+      </div>`;
+    }).join('');
+  }catch{}
+}
+// filtro historico
+document.addEventListener('DOMContentLoaded',()=>{
+  const f=document.getElementById('histFilter');
+  if(f) f.addEventListener('input',()=>loadCommits());
+});
+
+
+// FACTORY - FOCADO APENAS PWA/TWA/SITE (GAME REMOVIDO)
+let factoryType='';
+function openFactory(type){
+ factoryType=type;
+ if(type==='pwa' || type==='twa'){
+  const suggested='meu-'+type+'-'+Date.now().toString().slice(-4);
+  $('sName').value=suggested; $('sTitle').value=suggested.toUpperCase(); $('sSub').value='PWA • OFFLINE • INSTALÁVEL'; $('sDesc').value='App criado via HYPELAB Factory. Offline e instalável.'; 
+  $('sIcon').value='%'; $('sIconUrl').value='%'; studioIconData=''; studioBgData=''; $('sIconPreviewBox').innerHTML='%'; $('sIconPreviewBox').style.background='#050A07';
+  $('sColor').value='#00FF88'; $('sColorText').value='#00FF88'; $('sBgColor').value='#060A08'; $('sBg').value=''; $('sBgPreviewBox').style.background='#050A07'; $('sBtn').value='Instalar App'; $('sStyle').value='center'; 
+  updateStudio(); $('pwaStudio').classList.remove('hidden'); $('pwaStudio').classList.add('grid');
+  ['sName','sTitle','sSub','sDesc','sColor','sColorText','sBg','sBgColor','sBtn','sStyle','sIconUrl'].forEach(id=>{ const el=$(id); if(el && !el._bound){ el.addEventListener('input', updateStudio); el._bound=true; } });
+  return;
+ }
+ $('fTitle').innerText=type.toUpperCase(); $('fDesc').innerText='Vai criar repo com estrutura pronta'; $('fName').value='meu-'+type+'-'+Date.now().toString().slice(-4); $('factoryModal').classList.remove('hidden'); $('factoryModal').classList.add('grid');
+}
+function closeFactory(){ $('factoryModal').classList.add('hidden'); $('factoryModal').classList.remove('grid'); }
+function closeStudio(){ $('pwaStudio').classList.add('hidden'); $('pwaStudio').classList.remove('grid'); }
+function setPreset(v){ if(v.startsWith('#')){ $('sBgColor').value=v; $('sBg').value=''; $('sBgPreviewBox').style.background=v; } else if(v.startsWith('http')){ $('sBg').value=v; $('sBgPreviewBox').style.backgroundImage=`url(${v})`; $('sBgPreviewBox').style.backgroundSize='cover'; } else { $('sBg').value=''; $('sBgPreviewBox').style.background='#050A07'; } updateStudio(); }
+function setMode(m){ const p=$('sPreview'); p.className = m==='mobile' ? 'w-full max-w-[340px] min-h-[520px] md:min-h-[560px] rounded-[24px] overflow-hidden border-[8px] border-[#1A2E24] bg-[#060A08] relative flex flex-col shrink-0' : 'w-full max-w-[720px] min-h-[420px] rounded-[20px] overflow-hidden border-[8px] border-[#1A2E24] bg-[#060A08] relative flex flex-col'; }
+
+// NOVOS HANDLERS - ICONE COM URL + UPLOAD REAL
+function onIconUrlChange(){
+  const url=$('sIconUrl').value.trim();
+  $('sIcon').value=url||'%';
+  if(url && (url.startsWith('http')||url.startsWith('data:'))){
+    studioIconData=''; // prioriza URL, limpa data se usuário digitou URL
+    $('sIconStatus').innerText='CDN URL';
+    $('sIconStatus').className='mono text-[7px] px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400';
+  } else {
+    $('sIconStatus').innerText='EMOJI / TEXTO';
+    $('sIconStatus').className='mono text-[7px] px-2 py-0.5 rounded-full bg-white/10 text-[#6B8A7A]';
+  }
+  updateStudio();
+}
+function onBgUrlChange(){
+  const url=$('sBg').value.trim();
+  if(url.startsWith('http')){
+    studioBgData='';
+    $('sBgStatus').innerText='CDN URL';
+    $('sBgPreviewBox').style.backgroundImage=`url(${url})`;
+    $('sBgPreviewBox').style.backgroundSize='cover';
+  } else {
+    $('sBgStatus').innerText='COR';
+  }
+  updateStudio();
+}
+function clearIcon(){
+  $('sIconUrl').value='%';
+  $('sIcon').value='%';
+  studioIconData='';
+  $('sIconStatus').innerText='URL ou UPLOAD';
+  $('sIconStatus').className='mono text-[7px] px-2 py-0.5 rounded-full bg-[#00FF88]/20 text-[#00FF88]';
+  $('sIconPreviewBox').innerHTML='%';
+  $('sIconPreviewBox').style.background='#050A07';
+  updateStudio();
+}
+
+// Upload icone direto do celular
+$('sIconFile').addEventListener('change', async e=>{
+  const file=e.target.files[0]; if(!file) return;
+  if(file.size> 10*1024*1024){ toast('Imagem muito grande >10MB','err'); return; }
+  const ext='png'; // sempre PNG pra icon
+  studioIconExt='png';
+  const orig=file.size;
+  // Comprime para 192 e 512
+  const small=await compressImageToSize(file,192,'image/png',0.92);
+  const large=await compressImageToSize(file,512,'image/png',0.92);
+  // Usa o 512 como base pro iconData (GitHub vai salvar 2 arquivos iguais, mas depois vamos salvar separado)
+  studioIconData=large.dataUrl;
+  window._iconSmall=small; window._iconLarge=large;
+  $('sIconUrl').value='(compress) '+file.name+` ${fmtBytes(orig)} → ${fmtBytes(small.bytes)}+${fmtBytes(large.bytes)}`;
+  $('sIcon').value=studioIconData;
+  $('sIconStatus').innerText=`${fmtBytes(orig)} → ${fmtBytes(small.bytes+large.bytes)} ✅`;
+  $('sIconStatus').className='mono text-[7px] px-2 py-0.5 rounded-full bg-[#00FF88]/20 text-[#00FF88]';
+  updateStudio();
+  showCompressorToast(orig, small.bytes+large.bytes, file.name+' (192+512)');
+});
+// Upload fundo direto do celular
+$('sBgFile').addEventListener('change', async e=>{
+  const file=e.target.files[0]; if(!file) return;
+  const orig=file.size;
+  const comp=await compressImageMax(file, 1080, 'image/jpeg', 0.80);
+  studioBgData=comp.dataUrl;
+  studioBgExt='jpg';
+  $('sBg').value='(compress) '+file.name+` ${fmtBytes(orig)} → ${fmtBytes(comp.bytes)} ${comp.w}x${comp.h}`;
+  $('sBgStatus').innerText=`${fmtBytes(orig)} → ${fmtBytes(comp.bytes)} ✅`;
+  $('sBgStatus').className='mono text-[7px] px-2 py-0.5 rounded-full bg-[#00FF88]/20 text-[#00FF88]';
+  $('sBgPreviewBox').style.backgroundImage=`url(${studioBgData})`;
+  $('sBgPreviewBox').style.backgroundSize='cover';
+  updateStudio();
+  showCompressorToast(orig, comp.bytes, file.name);
+});
+
+function getIconDisplay(){
+  // retorna objeto {type:'img'|'emoji', src:'...', html:'...'}
+  if(studioIconData){
+    return {type:'img', src:studioIconData, html:`<img src="${studioIconData}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">`};
+  }
+  const url=$('sIconUrl')?.value.trim()||$('sIcon')?.value.trim()||'';
+  if(url.startsWith('http')||url.startsWith('data:')){
+    return {type:'img', src:url, html:`<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit" onerror="this.style.display='none'">`};
+  }
+  return {type:'emoji', src:'', html:url||'⚡'};
+}
+
+function updateStudio(){
+ const title=$('sTitle').value||'MEU APP'; const sub=$('sSub').value||'PWA • OFFLINE'; const desc=$('sDesc').value||'App criado via HYPELAB'; 
+ const color=$('sColorText').value||$('sColor').value||'#00FF88'; const bgColor=$('sBgColor').value||'#060A08'; 
+ const bgUrl=$('sBg').value||''; const btn=$('sBtn').value||'Instalar App';
+ const iconDisp=getIconDisplay();
+
+ // atualiza mini preview icone
+ const iconBox=$('sIconPreviewBox');
+ if(iconBox){
+   if(iconDisp.type==='img'){
+     iconBox.innerHTML=iconDisp.html;
+     iconBox.style.background=color;
+   } else {
+     iconBox.innerHTML=iconDisp.html;
+     iconBox.style.background=color;
+     iconBox.style.color='#000';
+     iconBox.style.fontSize='22px';
+   }
+ }
+
+ // BG style real
+ let bgStyle='';
+ let bgImageSrc='';
+ if(studioBgData){
+   bgStyle=`background-image:url(${studioBgData});background-size:cover;background-position:center;`;
+   bgImageSrc=studioBgData;
+   $('sBgPreviewBox').style.backgroundImage=`url(${studioBgData})`;
+ } else if(bgUrl && bgUrl.startsWith('http')){
+   bgStyle=`background-image:url(${bgUrl});background-size:cover;background-position:center;`;
+   bgImageSrc=bgUrl;
+   $('sBgPreviewBox').style.backgroundImage=`url(${bgUrl})`;
+ } else if(bgUrl && bgUrl.startsWith('#')){
+   bgStyle=`background:${bgUrl};`;
+ } else {
+   bgStyle=`background:${bgColor};`;
+   $('sBgPreviewBox').style.background=bgColor;
+   $('sBgPreviewBox').style.backgroundImage='none';
+ }
+
+ const preview=$('sPreview'); 
+ // aplica bg no container do preview
+ preview.style.cssText=bgStyle+';border-width:8px;';
+
+ const style=$('sStyle').value;
+ let inner='';
+ if(style==='center'){
+  inner=`<div class="flex-1 grid place-items-center p-6 text-center relative" style="background:linear-gradient(0deg,rgba(0,0,0,.75),rgba(0,0,0,.15))"><div class="space-y-5 max-w-[300px] w-full"><div class="w-24 h-24 mx-auto rounded-[24px] grid place-items-center text-3xl shadow-[0_8px_24px_rgba(0,0,0,.5)] overflow-hidden" style="background:linear-gradient(135deg,${color},${color}CC);color:#000">${iconDisp.html}</div><div><h1 class="text-3xl font-black leading-[0.9] text-white drop-shadow-[0_2px_8px_rgba(0,0,0,.8)]">${title}</h1><p class="text-[10px] tracking-widest font-bold mt-2 drop-shadow" style="color:${color}">${sub}</p><p class="text-white/80 text-[12px] mt-3 leading-[1.4]">${desc}</p></div><div class="grid gap-2"><button class="w-full h-11 rounded-[12px] font-black text-[12px] shadow-lg" style="background:${color};color:#000">${btn}</button><button class="w-full h-11 rounded-[12px] bg-white/10 backdrop-blur border border-white/10 text-white font-bold text-[12px]">Ver como usar</button></div><p class="mono text-[8px] text-white/50 mt-2">./icon/icon.png + ./icon/bg.png → preview real</p></div></div>`;
+ } else if(style==='bottom'){
+  inner=`<div class="flex-1 flex flex-col justify-end relative"><div class="absolute inset-0" style="${bgStyle}"></div><div class="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent"></div><div class="relative p-6 space-y-4"><div class="flex gap-3 items-center"><div class="w-12 h-12 rounded-[14px] grid place-items-center text-xl overflow-hidden" style="background:${color};color:#000">${iconDisp.html}</div><div><div class="font-black text-white">${title}</div><div class="text-[10px] text-white/60">${sub}</div></div></div><p class="text-white/80 text-[12px]">${desc}</p><button class="w-full h-11 rounded-[12px] font-black" style="background:${color};color:#000">${btn}</button></div></div>`;
+ } else { inner=`<div class="flex-1 grid place-items-center p-6 text-center" style="background:linear-gradient(0deg,rgba(0,0,0,.6),transparent)"><div class="w-20 h-20 rounded-full grid place-items-center text-3xl overflow-hidden" style="background:${color};color:#000">${iconDisp.html}</div><h1 class="font-black text-white mt-4 text-xl">${title}</h1><p class="text-white/60 text-[11px]">${sub}</p></div>`; }
+ preview.innerHTML=inner;
+ const c1=$('sColor'); const c2=$('sColorText'); if(document.activeElement!==c2) c2.value=c1.value;
+}
+
+async function createFromStudio(){
+ const raw=$('sName').value.trim(); if(!raw){toast('Nome obrigatorio','err');return;}
+ const name=raw.toLowerCase().normalize('NFD').replace(/[^a-z0-9-]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'').slice(0,50)||'hype-'+Date.now();
+ const type=factoryType||'pwa';
+ const iconUrlVal=$('sIconUrl').value.trim();
+ const custom={ 
+   title:$('sTitle').value, sub:$('sSub').value, desc:$('sDesc').value, 
+   iconUrl: iconUrlVal, icon:$('sIcon').value, iconData:studioIconData, iconExt:studioIconExt,
+   color:$('sColorText').value, bgColor:$('sBgColor').value, bg:$('sBg').value, bgData:studioBgData, bgExt:studioBgExt, btn:$('sBtn').value, style:$('sStyle').value 
+ };
+ const btn=$('sCreateBtn'); btn.innerText='CRIANDO PASTA ICON/...'; btn.disabled=true;
+ try{
+  const cr=await fetch('https://api.github.com/user/repos',{method:'POST',headers:{Authorization:'token '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify({name:name, description:'HypeLab '+type+' com icon/ real', private:false})});
+  if(!cr.ok) throw new Error((await cr.text()).slice(0,200));
+  const repoData=await cr.json(); REPO=repoData.full_name; localStorage.setItem('hypelab_repo',repoData.full_name); allRepos.unshift(repoData); renderRepos(allRepos);
+  toast('Repo '+name+' criado! Gerando icon/','ok');
+
+  // 1. Se tiver upload de icone, cria icon/icon.png (192) e splash.png (512) com compressor V8
+  let b64IconSmall=null, b64IconLarge=null;
+  if(window._iconSmall && window._iconLarge){
+    b64IconSmall=window._iconSmall.dataUrl.split(',')[1];
+    b64IconLarge=window._iconLarge.dataUrl.split(',')[1];
+  } else {
+    const b64Icon = custom.iconData ? custom.iconData.split(',')[1] : null;
+    b64IconSmall=b64Icon; b64IconLarge=b64Icon;
+  }
+  if(b64IconSmall){
+    await fetch(`https://api.github.com/repos/${REPO}/contents/icon/icon.png`,{method:'PUT',headers:{Authorization:'token '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify({message:'feat icon/icon 192 compress',content:b64IconSmall,branch:'main'})});
+    await new Promise(r=>setTimeout(r,400));
+    await fetch(`https://api.github.com/repos/${REPO}/contents/icon/splash.png`,{method:'PUT',headers:{Authorization:'token '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify({message:'feat icon/splash 512 compress',content:b64IconLarge,branch:'main'})});
+    await new Promise(r=>setTimeout(r,400));
+  }
+  const b64Bg = custom.bgData ? custom.bgData.split(',')[1] : null;
+  if(b64Bg){
+    await fetch(`https://api.github.com/repos/${REPO}/contents/icon/bg.${custom.bgExt}`,{method:'PUT',headers:{Authorization:'token '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify({message:'feat icon/bg',content:b64Bg,branch:'main'})});
+    await new Promise(r=>setTimeout(r,400));
+  }
+
+  const files=getPwaFilesCustom(name, custom, type);
+  for(const f of files){ 
+    await new Promise(r=>setTimeout(r,350)); 
+    const contentB64 = f.isBinary ? f.content : btoa(unescape(encodeURIComponent(f.content)));
+    await fetch('https://api.github.com/repos/'+REPO+'/contents/'+f.path,{method:'PUT',headers:{Authorization:'token '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify({message:'feat '+f.path, content:contentB64, branch:'main'})}); 
+  }
+  toast('HYPE PRONTO! com pasta icon/','ok'); closeStudio(); await loadBranches(); await loadFolder(''); await loadCommits();
+ }catch(e){ toast(e.message,'err'); } finally{ btn.innerText='CRIAR PWA COM PASTA ICON/'; btn.disabled=false; }
+}
+async function createHype(){
+ const raw=$('fName').value.trim(); if(!raw){toast('Nome obrigatorio','err');return;}
+ const name=raw.toLowerCase().normalize('NFD').replace(/[^a-z0-9-]/g,'-').replace(/-+/g,'-').slice(0,50)||'hype-'+Date.now();
+ const type=factoryType; const btn=$('fBtn'); btn.innerText='CRIANDO...'; btn.disabled=true;
+ try{
+  const cr=await fetch('https://api.github.com/user/repos',{method:'POST',headers:{Authorization:'token '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify({name:name, description:'HypeLab '+type, private:false})});
+  if(!cr.ok) throw new Error((await cr.text()).slice(0,150));
+  const repoData=await cr.json(); REPO=repoData.full_name; localStorage.setItem('hypelab_repo',repoData.full_name); allRepos.unshift(repoData); renderRepos(allRepos);
+  toast('Repo criado','ok');
+  const files=getSimpleFiles(type,name);
+  for(const f of files){ await new Promise(r=>setTimeout(r,350)); await fetch('https://api.github.com/repos/'+REPO+'/contents/'+f.path,{method:'PUT',headers:{Authorization:'token '+TOKEN,'Content-Type':'application/json'},body:JSON.stringify({message:'feat '+f.path, content:btoa(unescape(encodeURIComponent(f.content))), branch:'main'})}); }
+  toast('Pronto!','ok'); closeFactory(); await loadBranches(); await loadFolder('');
+ }catch(e){ toast(e.message,'err'); } finally{ btn.innerText='CRIAR HYPE'; btn.disabled=false; }
+}
+
+function getPwaFilesCustom(name, custom, type){
+ const appName=name; const shortName=name.slice(0,12).toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,12) || 'gitgen-by-ka';
+ const title=custom.title||appName.toUpperCase(); const sub=custom.sub||'PWA • OFFLINE'; const desc=custom.desc||'App criado via HYPELAB';
+ const color=custom.color||'#00540f'; const btn=custom.btn||'Instalar App'; const bgColor=custom.bgColor||'#060a08';
+
+ let iconSrcForHtml='';
+ let iconExt = custom.iconExt||'png';
+ let hasLocalIcon = !!custom.iconData;
+
+ if(hasLocalIcon){
+   iconSrcForHtml=`./icon/icon.${iconExt}`;
+ } else if(custom.iconUrl && (custom.iconUrl.startsWith('http')||custom.iconUrl.startsWith('data:'))){
+   iconSrcForHtml=custom.iconUrl;
+ } else {
+   let raw = (custom.iconUrl||custom.icon||'%').trim() || '⚡';
+   if(raw.startsWith('http')||raw.startsWith('data:')){
+     iconSrcForHtml=raw;
+   } else {
+     const safe=raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+     const svg=`<svg xmlns='http://www.w3.org/2000/svg' width='512' height='512'><rect width='512' height='512' rx='120' fill='${color}'/><text x='50%' y='55%' dominant-baseline='middle' text-anchor='middle' font-size='280' font-family='Arial' fill='#000'>${safe}</text></svg>`;
+     iconSrcForHtml='data:image/svg+xml,'+encodeURIComponent(svg);
+   }
+ }
+ const iconHtmlTag = (iconSrcForHtml.startsWith('http')||iconSrcForHtml.startsWith('data:')||iconSrcForHtml.startsWith('./')) ? `<img src="${iconSrcForHtml}" style="width:100%;height:100%;object-fit:cover">` : iconSrcForHtml;
+
+ let bgCss='';
+ let bgForHtml='';
+ if(custom.bgData){
+   bgForHtml=`./icon/bg.${custom.bgExt||'png'}`;
+   bgCss=`background-image:url(${bgForHtml});background-size:cover;background-position:center;`;
+ } else if(custom.bg && custom.bg.startsWith('http')){
+   bgForHtml=custom.bg;
+   bgCss=`background-image:url(${custom.bg});background-size:cover;background-position:center;`;
+ } else {
+   bgCss=`background:${bgColor};`;
+ }
+
+ // MANIFEST APROVADO - CRAVADO COM app.html COMO START
+ const manifestApproved = {
+   name: appName,
+   short_name: shortName,
+   start_url: "./app.html",
+   display: "standalone",
+   background_color: bgColor,
+   theme_color: color,
+   icons: [
+     { src: "./icon/icon.png", sizes: "192x192", type: "image/png", purpose: "any maskable" },
+     { src: "./icon/splash.png", sizes: "512x512", type: "image/png", purpose: "any maskable" }
+   ]
+ };
+
+ // app.html AGORA É O INDEX REAL DO APP
+ const appHtmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>${title}</title><meta name="theme-color" content="${color}"><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="./icon/icon.png"><link rel="icon" href="./icon/icon.png"><script src="https://cdn.tailwindcss.com"><\/script><style>body{margin:0;min-height:100vh;min-height:100dvh;${bgCss}}<\/style></head><body class="min-h-screen flex flex-col text-white" style="${bgCss}"><div class="flex-1 grid place-items-center p-6 text-center relative"><div class="absolute inset-0" style="background:linear-gradient(0deg,rgba(0,0,0,.78),rgba(0,0,0,.15))"></div><div class="relative w-full max-w-[360px] space-y-6"><div class="w-24 h-24 mx-auto rounded-[24px] grid place-items-center text-4xl overflow-hidden shadow-[0_12px_32px_rgba(0,0,0,.5)]" style="background:linear-gradient(135deg,${color},${color}CC);color:#000">${iconHtmlTag}</div><div><h1 class="text-4xl font-black leading-[0.9]">${title}</h1><p class="text-[11px] tracking-widest font-bold mt-2" style="color:${color}">${sub}</p><p class="text-white/80 text-[13px] mt-3">${desc}</p></div><div class="grid gap-3"><div class="w-full p-4 rounded-[14px] bg-black/40 border border-white/10"><p class="mono text-[10px] text-white/70">App principal carregado via app.html</p><p class="text-[12px] mt-1">Este é o index real do seu PWA.</p></div></div><p id="status" class="mono text-[10px] text-white/70">✅ PWA com icon/ local</p></div></div><script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(()=>{document.getElementById('status').innerText='✅ Offline ativo!';});}<\/script></body></html>`;
+
+ // index.html agora é só landing / instalador que chama app.html
+ const indexHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><title>${appName} - Instalar</title><meta name="theme-color" content="${color}"><link rel="manifest" href="manifest.json"><link rel="apple-touch-icon" href="./icon/icon.png"><script src="https://cdn.tailwindcss.com"><\/script><style>body{margin:0;min-height:100vh;${bgCss}}<\/style></head><body class="min-h-screen grid place-items-center text-white p-6" style="${bgCss}"><div class="w-full max-w-[360px] text-center space-y-6 bg-black/60 backdrop-blur-xl p-6 rounded-[24px] border border-white/10"><div class="w-20 h-20 mx-auto rounded-[20px] overflow-hidden grid place-items-center text-3xl" style="background:${color};color:#000">${iconHtmlTag}</div><h1 class="text-3xl font-black">${title}</h1><p class="text-white/60 text-[12px]">${desc}</p><div class="grid gap-2"><a href="app.html" class="w-full h-12 rounded-[14px] grid place-items-center font-black text-[13px]" style="background:${color};color:#000">Abrir App →</a><button id="installBtn" onclick="installApp()" class="w-full h-12 rounded-[14px] bg-white/10 border border-white/10 font-bold">Instalar App</button></div><p id="status" class="mono text-[9px] text-white/50">Manifest cravado com ./icon/icon.png</p></div><script>let d=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();d=e;document.getElementById('status').innerText='✅ Pronto pra instalar!';});function installApp(){if(d){d.prompt();}else{location.href='app.html';}}if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js');}<\/script></body></html>`;
+
+ return [
+  {path:'index.html', content:indexHtml},
+  {path:'app.html', content:appHtmlContent},
+  {path:'manifest.json', content: JSON.stringify(manifestApproved,null,2)},
+  {path:'sw.js', content: `const CACHE="gitgen-${appName}-v4"; const ASSETS=['./','./index.html','./app.html','./offline.html','./manifest.json','./icon/icon.png','./icon/splash.png'${custom.bgData?`,'./icon/bg.${custom.bgExt}'`:''}]; self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS).catch(()=>c.addAll(['./','./app.html','./index.html']))))}); self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).catch(()=>caches.match('./offline.html'))))});`},
+  {path:'offline.html', content: `<body style="background:${bgColor};color:#fff;display:grid;place-items:center;height:100vh;text-align:center;font-family:sans-serif"><div style="width:80px;height:80px;margin:0 auto 16px;background:${color};border-radius:20px;display:grid;place-items:center;font-size:40px;overflow:hidden"><img src="./icon/icon.png" style="width:100%;height:100%;object-fit:cover" onerror="this.outerHTML='${title.charAt(0)}'"></div><h1>${appName}</h1><p>Você está offline - mas o app está instalado!</p><a href="./app.html" style="color:${color}">Voltar pro app</a></body>`},
+  {path:'config.json', content: JSON.stringify({
+  project: appName,
+  version: "v4",
+  created_at: new Date().toISOString().slice(0,10),
+  factory: type,
+  identity: {
+    title: title,
+    sub: sub,
+    desc: desc,
+    btn: btn
+  },
+  visual: {
+    color: color,
+    bgColor: bgColor,
+    style: custom.style||'center',
+    iconUrl: custom.iconUrl||iconSrcForHtml,
+    bgUrl: custom.bg||bgForHtml,
+    iconLocal: "./icon/icon.png",
+    splashLocal: "./icon/splash.png",
+    bgLocal: custom.bgData ? `./icon/bg.${custom.bgExt||'png'}` : (custom.bg && custom.bg.startsWith('http') ? custom.bg : null)
+  },
+  pwa: {
+    start_url: "./app.html",
+    display: "standalone",
+    manifest: "./manifest.json",
+    hasIconFolder: true
+  }
+}, null, 2)},
+  {path:'icon/README.md', content: `# icon/ - CRAVADO\n- icon.png (192x192) - ícone home\n- splash.png (512x512) - splash tela cheia\n- bg.png - fundo (opcional)\nManifest start_url: ./app.html\napp.html é o index real do app`}
+ ];
+}
+
+
+function getSimpleFiles(type,name){
+ if(type==='site') return [{path:'index.html', content:`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${name}</title><script src="https://cdn.tailwindcss.com"><\/script></head><body class="bg-[#060A08] text-white grid place-items-center min-h-screen"><h1 class="text-5xl font-black">${name.toUpperCase()}<br><span class="text-[#00FF88]">HYPE</span></h1></body></html>`}];
+ return [{path:'index.html', content:`<h1>${name}</h1>`}];
+}
+
+(function init(){ if(TOKEN) $('token').value=TOKEN; if(REPO){$('owner').value=REPO.split('/')[0]; $('rname').value=REPO.split('/')[1];} if(innerWidth>=900) document.querySelectorAll('.mod').forEach(m=>m.classList.add('active')); if(TOKEN) autoConnect(); })();
+window.addEventListener('error',e=>{ if(e.message && !e.message.includes('ResizeObserver')) toast('JS: '+e.message,'err'); });
+</script>
+</body>
+</html>
