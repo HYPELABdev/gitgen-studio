@@ -1,0 +1,28 @@
+{
+  "project": "gitgen-studio",
+  "version": "v4",
+  "created_at": "2026-07-14",
+  "factory": "pwa",
+  "identity": {
+    "title": "GITgen Studio",
+    "sub": "CRIE • EDITE • EVOLUA",
+    "desc": "Gerenciador Android de arquivos e projetos do Github by Kalli420.",
+    "btn": "Instalar App"
+  },
+  "visual": {
+    "color": "#325c00",
+    "bgColor": "#060a08",
+    "style": "center",
+    "iconUrl": "(upload) 1000007474.png",
+    "bgUrl": "",
+    "iconLocal": "./icon/icon.png",
+    "splashLocal": "./icon/splash.png",
+    "bgLocal": null
+  },
+  "pwa": {
+    "start_url": "./app.html",
+    "display": "standalone",
+    "manifest": "./manifest.json",
+    "hasIconFolder": true
+  }
+}
